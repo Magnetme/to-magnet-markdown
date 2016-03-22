@@ -1,7 +1,7 @@
 {
-  "name": "to-markdown",
+  "name": "to-magnet-markdown",
   "description": "HTML-to-Markdown converter",
-  "version": "3.0.0",
+  "version": "1.0.0",
   "author": "Dom Christie",
   "browser": {
     "jsdom": false
@@ -27,11 +27,14 @@
   "main": "index.js",
   "repository": {
     "type": "git",
-    "url": "https://github.com/domchristie/to-markdown.git"
+    "url": "https://github.com/Magnetme/to-markdown.git"
   },
   "scripts": {
     "start": "watchify -s toMarkdown -o dist/to-markdown.js index.js -v",
     "test": "standard index.js lib/**/*.js test/**/*.js && qunit -c ./index.js -t ./test/to-markdown-test.js ./test/gfm-test.js"
   },
-  "url": "http://domchristie.github.com/to-markdown/"
+  "url": "http://Magnetme.github.com/to-markdown/",
+  "publishConfig": {
+    "registry": "http://npm.internal.magnet.me:4873/"
+  }
 }
