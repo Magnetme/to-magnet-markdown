@@ -1,6 +1,8 @@
 # to-markdown
 
-An HTML to Markdown converter written in JavaScript.
+An HTML to Magnet Markdown converter written in JavaScript.
+
+This is a fork of Dom Christie's [to-markdown](https://github.com/domchristie/to-markdown) implementation with minor changes to make it suitable for the Magnet.me website.
 
 The API is as follows:
 

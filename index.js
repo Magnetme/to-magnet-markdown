@@ -10,8 +10,7 @@
 
 var toMarkdown
 var converters
-var mdConverters = require('./lib/md-converters')
-var gfmConverters = require('./lib/gfm-converters')
+var magnetMdConverters = require('./lib/magnet-md-converters')
 var HtmlParser = require('./lib/html-parser')
 var collapse = require('collapse-whitespace')
 
@@ -202,10 +201,7 @@ toMarkdown = function (input, options) {
   var nodes = bfsOrder(clone)
   var output
 
-  converters = mdConverters.slice(0)
-  if (options.gfm) {
-    converters = gfmConverters.concat(converters)
-  }
+  converters = magnetMdConverters.slice(0)
 
   if (options.converters) {
     converters = options.converters.concat(converters)
@@ -217,9 +213,7 @@ toMarkdown = function (input, options) {
   }
   output = getContent(clone)
 
-  return output.replace(/^[\t\r\n]+|[\t\r\n\s]+$/g, '')
-    .replace(/\n\s+\n/g, '\n\n')
-    .replace(/\n{3,}/g, '\n\n')
+	return output;
 }
 
 toMarkdown.isBlock = isBlock
