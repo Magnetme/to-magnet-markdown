@@ -1,7 +1,7 @@
 {
   "name": "to-magnet-markdown",
   "description": "HTML-to-Markdown converter",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "author": "Dom Christie",
   "browser": {
     "jsdom": false
