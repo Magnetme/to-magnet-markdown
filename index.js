@@ -67,6 +67,13 @@ function bfsOrder (node) {
   outqueue.shift()
   return outqueue
 }
+function escape(text) {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/#/g, '\\#')
+    .replace(/_/g, '\\_')
+    .replace(/\*/g, '\\*');
+}
 
 /*
  * Contructs a Markdown string of replacement text for a given node
@@ -78,7 +85,7 @@ function getContent (node) {
     if (node.childNodes[i].nodeType === 1) {
       text += node.childNodes[i]._replacement
     } else if (node.childNodes[i].nodeType === 3) {
-      text += node.childNodes[i].data
+      text += escape(node.childNodes[i].data);
     } else continue
   }
   return text
@@ -213,7 +220,7 @@ toMarkdown = function (input, options) {
   }
   output = getContent(clone)
 
-	return output;
+  return output;
 }
 
 toMarkdown.isBlock = isBlock
