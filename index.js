@@ -72,7 +72,8 @@ function escape(text) {
     .replace(/\\/g, '\\\\')
     .replace(/#/g, '\\#')
     .replace(/_/g, '\\_')
-    .replace(/\*/g, '\\*');
+    .replace(/\*/g, '\\*')
+    .replace(/\./g, '\\.');
 }
 
 /*
@@ -200,9 +201,6 @@ toMarkdown = function (input, options) {
   if (typeof input !== 'string') {
     throw new TypeError(input + ' is not a string')
   }
-
-  // Escape potential ol triggers
-  input = input.replace(/(\d+)\. /g, '$1\\. ')
 
   var clone = htmlToDom(input).body
   var nodes = bfsOrder(clone)
