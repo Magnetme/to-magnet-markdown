@@ -11,8 +11,7 @@
 
 var toMarkdown
 var converters
-var mdConverters = require('./lib/md-converters')
-var gfmConverters = require('./lib/gfm-converters')
+var magnetMdConverters = require('./lib/magnet-md-converters')
 var HtmlParser = require('./lib/html-parser')
 var collapse = require('collapse-whitespace')
 
@@ -69,6 +68,14 @@ function bfsOrder (node) {
   outqueue.shift()
   return outqueue
 }
+function escape(text) {
+  return text
+    .replace(/\\/g, '\\\\')
+    .replace(/#/g, '\\#')
+    .replace(/_/g, '\\_')
+    .replace(/\*/g, '\\*')
+    .replace(/\./g, '\\.');
+}
 
 /*
  * Contructs a Markdown string of replacement text for a given node
@@ -80,7 +87,7 @@ function getContent (node) {
     if (node.childNodes[i].nodeType === 1) {
       text += node.childNodes[i]._replacement
     } else if (node.childNodes[i].nodeType === 3) {
-      text += node.childNodes[i].data
+      text += escape(node.childNodes[i].data);
     } else continue
   }
   return text
@@ -196,17 +203,11 @@ toMarkdown = function (input, options) {
     throw new TypeError(input + ' is not a string')
   }
 
-  // Escape potential ol triggers
-  input = input.replace(/(\d+)\. /g, '$1\\. ')
-
   var clone = htmlToDom(input).body
   var nodes = bfsOrder(clone)
   var output
 
-  converters = mdConverters.slice(0)
-  if (options.gfm) {
-    converters = gfmConverters.concat(converters)
-  }
+  converters = magnetMdConverters.slice(0)
 
   if (options.converters) {
     converters = options.converters.concat(converters)
@@ -218,9 +219,7 @@ toMarkdown = function (input, options) {
   }
   output = getContent(clone)
 
-  return output.replace(/^[\t\r\n]+|[\t\r\n\s]+$/g, '')
-    .replace(/\n\s+\n/g, '\n\n')
-    .replace(/\n{3,}/g, '\n\n')
+  return output;
 }
 
 toMarkdown.isBlock = isBlock
@@ -229,119 +228,7 @@ toMarkdown.outer = outer
 
 module.exports = toMarkdown
 
-},{"./lib/gfm-converters":2,"./lib/html-parser":3,"./lib/md-converters":4,"collapse-whitespace":7}],2:[function(require,module,exports){
-'use strict'
-
-function cell (content, node) {
-  var index = Array.prototype.indexOf.call(node.parentNode.childNodes, node)
-  var prefix = ' '
-  if (index === 0) prefix = '| '
-  return prefix + content + ' |'
-}
-
-var highlightRegEx = /highlight highlight-(\S+)/
-
-module.exports = [
-  {
-    filter: 'br',
-    replacement: function () {
-      return '\n'
-    }
-  },
-  {
-    filter: ['del', 's', 'strike'],
-    replacement: function (content) {
-      return '~~' + content + '~~'
-    }
-  },
-
-  {
-    filter: function (node) {
-      return node.type === 'checkbox' && node.parentNode.nodeName === 'LI'
-    },
-    replacement: function (content, node) {
-      return (node.checked ? '[x]' : '[ ]') + ' '
-    }
-  },
-
-  {
-    filter: ['th', 'td'],
-    replacement: function (content, node) {
-      return cell(content, node)
-    }
-  },
-
-  {
-    filter: 'tr',
-    replacement: function (content, node) {
-      var borderCells = ''
-      var alignMap = { left: ':--', right: '--:', center: ':-:' }
-
-      if (node.parentNode.nodeName === 'THEAD') {
-        for (var i = 0; i < node.childNodes.length; i++) {
-          var align = node.childNodes[i].attributes.align
-          var border = '---'
-
-          if (align) border = alignMap[align.value] || border
-
-          borderCells += cell(border, node.childNodes[i])
-        }
-      }
-      return '\n' + content + (borderCells ? '\n' + borderCells : '')
-    }
-  },
-
-  {
-    filter: 'table',
-    replacement: function (content) {
-      return '\n\n' + content + '\n\n'
-    }
-  },
-
-  {
-    filter: ['thead', 'tbody', 'tfoot'],
-    replacement: function (content) {
-      return content
-    }
-  },
-
-  // Fenced code blocks
-  {
-    filter: function (node) {
-      return node.nodeName === 'PRE' &&
-      node.firstChild &&
-      node.firstChild.nodeName === 'CODE'
-    },
-    replacement: function (content, node) {
-      return '\n\n```\n' + node.firstChild.textContent + '\n```\n\n'
-    }
-  },
-
-  // Syntax-highlighted code blocks
-  {
-    filter: function (node) {
-      return node.nodeName === 'PRE' &&
-      node.parentNode.nodeName === 'DIV' &&
-      highlightRegEx.test(node.parentNode.className)
-    },
-    replacement: function (content, node) {
-      var language = node.parentNode.className.match(highlightRegEx)[1]
-      return '\n\n```' + language + '\n' + node.textContent + '\n```\n\n'
-    }
-  },
-
-  {
-    filter: function (node) {
-      return node.nodeName === 'DIV' &&
-      highlightRegEx.test(node.className)
-    },
-    replacement: function (content) {
-      return '\n\n' + content + '\n\n'
-    }
-  }
-]
-
-},{}],3:[function(require,module,exports){
+},{"./lib/html-parser":2,"./lib/magnet-md-converters":3,"collapse-whitespace":6}],2:[function(require,module,exports){
 /*
  * Set up window for Node.js
  */
@@ -419,17 +306,17 @@ function shouldUseActiveX () {
 
 module.exports = canParseHtmlNatively() ? _window.DOMParser : createHtmlParser()
 
-},{"jsdom":6}],4:[function(require,module,exports){
+},{"jsdom":5}],3:[function(require,module,exports){
 'use strict'
+
 
 module.exports = [
   {
-    filter: 'p',
-    replacement: function (content) {
-      return '\n\n' + content + '\n\n'
+    filter : 'p',
+    replacement: function(content) {
+        return '\n\n' + content + '\n  \n'
     }
   },
-
   {
     filter: 'br',
     replacement: function () {
@@ -450,13 +337,6 @@ module.exports = [
   },
 
   {
-    filter: 'hr',
-    replacement: function () {
-      return '\n\n* * *\n\n'
-    }
-  },
-
-  {
     filter: ['em', 'i'],
     replacement: function (content) {
       return '_' + content + '_'
@@ -470,19 +350,6 @@ module.exports = [
     }
   },
 
-  // Inline code
-  {
-    filter: function (node) {
-      var hasSiblings = node.previousSibling || node.nextSibling
-      var isCodeBlock = node.parentNode.nodeName === 'PRE' && !hasSiblings
-
-      return node.nodeName === 'CODE' && !isCodeBlock
-    },
-    replacement: function (content) {
-      return '`' + content + '`'
-    }
-  },
-
   {
     filter: function (node) {
       return node.nodeName === 'A' && node.getAttribute('href')
@@ -490,37 +357,6 @@ module.exports = [
     replacement: function (content, node) {
       var titlePart = node.title ? ' "' + node.title + '"' : ''
       return '[' + content + '](' + node.getAttribute('href') + titlePart + ')'
-    }
-  },
-
-  {
-    filter: 'img',
-    replacement: function (content, node) {
-      var alt = node.alt || ''
-      var src = node.getAttribute('src') || ''
-      var title = node.title || ''
-      var titlePart = title ? ' "' + title + '"' : ''
-      return src ? '![' + alt + ']' + '(' + src + titlePart + ')' : ''
-    }
-  },
-
-  // Code blocks
-  {
-    filter: function (node) {
-      return node.nodeName === 'PRE' && node.firstChild.nodeName === 'CODE'
-    },
-    replacement: function (content, node) {
-      return '\n\n    ' + node.firstChild.textContent.replace(/\n/g, '\n    ') + '\n\n'
-    }
-  },
-
-  {
-    filter: 'blockquote',
-    replacement: function (content) {
-      content = content.trim()
-      content = content.replace(/\n{3,}/g, '\n\n')
-      content = content.replace(/^/gm, '> ')
-      return '\n\n' + content + '\n\n'
     }
   },
 
@@ -552,27 +388,18 @@ module.exports = [
     }
   },
 
-  {
-    filter: function (node) {
-      return this.isBlock(node)
-    },
-    replacement: function (content, node) {
-      return '\n\n' + this.outer(node, content) + '\n\n'
-    }
-  },
-
   // Anything else!
   {
     filter: function () {
       return true
     },
     replacement: function (content, node) {
-      return this.outer(node, content)
+			return content;
     }
   }
 ]
 
-},{}],5:[function(require,module,exports){
+},{}],4:[function(require,module,exports){
 /**
  * This file automatically generated from `build.js`.
  * Do not manually edit.
@@ -616,9 +443,9 @@ module.exports = [
   "video"
 ];
 
-},{}],6:[function(require,module,exports){
+},{}],5:[function(require,module,exports){
 
-},{}],7:[function(require,module,exports){
+},{}],6:[function(require,module,exports){
 'use strict';
 
 var voidElements = require('void-elements');
@@ -756,7 +583,7 @@ function next(prev, current) {
 
 module.exports = collapseWhitespace;
 
-},{"block-elements":5,"void-elements":8}],8:[function(require,module,exports){
+},{"block-elements":4,"void-elements":7}],7:[function(require,module,exports){
 /**
  * This file automatically generated from `pre-publish.js`.
  * Do not manually edit.
