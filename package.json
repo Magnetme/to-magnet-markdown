@@ -1,5 +1,5 @@
 {
-  "name": "to-magnet-markdown",
+  "name": "@magnet.me/to-magnet-markdown",
   "description": "HTML-to-Markdown converter",
   "version": "1.0.3",
   "author": "Dom Christie",
@@ -33,8 +33,5 @@
     "start": "watchify -s toMarkdown -o dist/to-markdown.js index.js -v",
     "test": "standard index.js lib/**/*.js test/**/*.js && qunit -c ./index.js -t ./test/to-markdown-test.js ./test/gfm-test.js"
   },
-  "url": "http://Magnetme.github.com/to-markdown/",
-  "publishConfig": {
-    "registry": "http://npm.internal.magnet.me:4873/"
-  }
+  "url": "http://Magnetme.github.com/to-markdown/"
 }
